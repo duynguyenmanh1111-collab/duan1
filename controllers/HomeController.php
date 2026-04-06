@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?php
 
 class HomeController
@@ -23,3 +24,18 @@ class HomeController
         require_once PATH_VIEW . 'blog.php';
     }
 }
+=======
+<?php
+
+class HomeController
+{
+    public function index() 
+    {
+        require_once PATH_VIEW . 'main.php';
+    }
+    public function about() 
+    {
+        require_once PATH_VIEW . 'about.php';
+    }
+}
+>>>>>>> 3801a107b199a547d599a7e4aa9e07da6c5f5fb3
