@@ -6,4 +6,8 @@ class HomeController
     {
         require_once PATH_VIEW . 'main.php';
     }
+    public function about() 
+    {
+        require_once PATH_VIEW . 'about.php';
+    }
 }
