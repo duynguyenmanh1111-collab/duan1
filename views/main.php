@@ -18,7 +18,7 @@
                 <ul class="navbar-nav ms-auto">
                     <?php if (isset($_SESSION['user'])): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="<?= BASE_URL ?>login.php?action=logout">Đăng xuất</a>
+                            <a class="nav-link" href="<?= BASE_URL ?>logout.php">Đăng xuất</a>
                         </li>
                     <?php endif; ?>
                 </ul>

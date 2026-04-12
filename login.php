@@ -3,12 +3,18 @@ session_start();
 require_once __DIR__ . '/configs/env.php';
 require_once __DIR__ . '/configs/helper.php';
 
+if (isset($_SESSION['user'])) {
+    header('Location: ' . BASE_URL);
+    exit;
+}
+
 $errors = [];
 $message = null;
 
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     unset($_SESSION['user']);
-    $message = 'Bạn đã đăng xuất thành công.';
+    header('Location: ' . BASE_URL . 'login.php');
+    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -87,7 +93,7 @@ $pageTitle = 'Đăng nhập';
                                 Bạn đã đăng nhập với email
                                 <strong><?= htmlspecialchars($_SESSION['user']['email']) ?></strong>.
                             </div>
-                            <a href="<?= BASE_URL ?>login.php?action=logout" class="btn btn-outline-secondary">Đăng xuất</a>
+                            <a href="<?= BASE_URL ?>logout.php" class="btn btn-outline-secondary">Đăng xuất</a>
                         <?php else: ?>
                             <form method="post" action="<?= BASE_URL ?>login.php">
                                 <div class="mb-3">
