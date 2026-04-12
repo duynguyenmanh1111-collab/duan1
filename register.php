@@ -58,6 +58,7 @@ $pageTitle = 'Đăng ký';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($pageTitle) ?></title>
+    <base href="<?= htmlspecialchars(BASE_URL) ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
@@ -83,7 +84,7 @@ $pageTitle = 'Đăng ký';
                             </div>
                         <?php endif; ?>
 
-                        <form method="post" action="register.php">
+                        <form method="post" action="<?= BASE_URL ?>register.php">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Tên người dùng</label>
                                 <input type="text" class="form-control" id="username" name="username"
@@ -106,7 +107,7 @@ $pageTitle = 'Đăng ký';
                             <button type="submit" class="btn btn-success w-100">Đăng ký</button>
                         </form>
                         <div class="mt-3 text-center">
-                            <a href="login.php">Đã có tài khoản? Đăng nhập</a>
+                            <a href="<?= BASE_URL ?>login.php">Đã có tài khoản? Đăng nhập</a>
                         </div>
                     </div>
                 </div>

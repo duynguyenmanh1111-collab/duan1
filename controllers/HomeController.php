@@ -2,11 +2,11 @@
 
 class HomeController
 {
-    public function index() 
+    public function index()
     {
         require_once PATH_VIEW . 'main.php';
     }
-    public function about() 
+    public function about()
     {
         require_once PATH_VIEW . 'about.php';
     }
