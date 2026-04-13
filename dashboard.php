@@ -28,7 +28,7 @@ $user = $_SESSION['user'];
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= BASE_URL ?>dashboard.php">Dashboard</a>
+                        <a class="nav-link" href="<?= BASE_URL ?>dashboard.php"></a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?= BASE_URL ?>login.php?action=logout">Đăng xuất</a>
@@ -41,9 +41,9 @@ $user = $_SESSION['user'];
     <div class="container mt-4">
         <h1><?= htmlspecialchars($pageTitle) ?></h1>
         <div class="container-fluid py-4">
-            <h2 class="mb-4">Hệ thống Quản trị Du lịch</h2>
+            <h2 class="mb-4">Hệ thống Quản trị Du lịch của VIE TRAVEL</h2> 
 
-            <div class="row">
+            <!-- <div class="row">
                 <div class="col-xl-3 col-md-6 mb-4">
                     <div
                         class="card border-left-primary shadow h-100 py-2 border-0 border-start border-primary border-4">
@@ -174,4 +174,4 @@ $user = $_SESSION['user'];
     </div>
 </body>
 
-</html>
+</html> -->
