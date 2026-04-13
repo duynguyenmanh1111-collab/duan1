@@ -17,8 +17,9 @@
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
                     <?php if (isset($_SESSION['user'])): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?= BASE_URL ?>logout.php">Đăng xuất</a>
+                        <li class="nav-item"> <a class="nav-link" href="<?= BASE_URL ?>dashboard.php">Dashboard</a>
+                        </li>
+                        <li class="nav-item"> <a class="nav-link" href="<?= BASE_URL ?>logout.php">Đăng xuất</a>
                         </li>
                     <?php endif; ?>
                 </ul>
@@ -34,6 +35,7 @@
                 <?php if (isset($_SESSION['user'])): ?>
                     <p class="lead">Xin chào, <strong><?= htmlspecialchars($user['username'] ?? 'Khách') ?></strong>!</p>
                     <p>Bạn đã đăng nhập và đang ở trang chủ.</p>
+                    <p><a href="<?= BASE_URL ?>dashboard.php" class="btn btn-primary">Vào Dashboard</a></p>
                 <?php else: ?>
                     <p class="lead">Bạn chưa đăng nhập.</p>
                     <p>
