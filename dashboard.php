@@ -8,6 +8,11 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 
+if ($_SESSION['user']['role'] === 'admin') {
+    header('Location: ' . BASE_URL . 'admin.php');
+    exit;
+}
+
 $pageTitle = 'Dashboard';
 $user = $_SESSION['user'];
 ?>
@@ -26,12 +31,12 @@ $user = $_SESSION['user'];
         <div class="container">
             <a class="navbar-brand" href="<?= BASE_URL ?>">Trang chủ</a>
             <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?= BASE_URL ?>dashboard.php"></a>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                        <span class="navbar-text">Quyền: <strong><?= htmlspecialchars($user['role']) ?></strong></span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?= BASE_URL ?>login.php?action=logout">Đăng xuất</a>
+                        <a class="nav-link" href="<?= BASE_URL ?>logout.php">Đăng xuất</a>
                     </li>
                 </ul>
             </div>
@@ -41,9 +46,9 @@ $user = $_SESSION['user'];
     <div class="container mt-4">
         <h1><?= htmlspecialchars($pageTitle) ?></h1>
         <div class="container-fluid py-4">
-            <h2 class="mb-4">Hệ thống Quản trị Du lịch của VIE TRAVEL</h2> 
+            <h2 class="mb-4">Hệ thống Quản trị Du lịch của VIE TRAVEL</h2>
 
-            <!-- <div class="row">
+            <div class="row">
                 <div class="col-xl-3 col-md-6 mb-4">
                     <div
                         class="card border-left-primary shadow h-100 py-2 border-0 border-start border-primary border-4">
@@ -174,4 +179,4 @@ $user = $_SESSION['user'];
     </div>
 </body>
 
-</html> -->
+</html>

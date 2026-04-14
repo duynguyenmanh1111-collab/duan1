@@ -3,17 +3,21 @@ session_start();
 require_once __DIR__ . '/configs/env.php';
 require_once __DIR__ . '/configs/helper.php';
 
-if (isset($_SESSION['user'])) {
-    header('Location: ' . BASE_URL);
-    exit;
-}
-
 $errors = [];
 $message = null;
 
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     unset($_SESSION['user']);
     header('Location: ' . BASE_URL . 'login.php');
+    exit;
+}
+
+if (isset($_SESSION['user'])) {
+    if ($_SESSION['user']['role'] === 'admin') {
+        header('Location: ' . BASE_URL . 'admin.php');
+    } else {
+        header('Location: ' . BASE_URL . 'dashboard.php');
+    }
     exit;
 }
 
@@ -29,26 +33,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $users = $_SESSION['users'] ?? [];
-        $user = null;
+        try {
+            // Khởi tạo kết nối Database
+            $conn = new PDO("mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8", DB_USERNAME, DB_PASSWORD);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        foreach ($users as $item) {
-            if (strtolower($item['email']) === strtolower($email)) {
-                $user = $item;
-                break;
+            $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($user && password_verify($password, $user['password'])) {
+                $_SESSION['user'] = [
+                    'id' => $user['id'],
+                    'username' => $user['name'],
+                    'email' => $user['email'],
+                    'role' => $user['role'],
+                ];
+
+                if ($user['role'] === 'admin') {
+                    header('Location: ' . BASE_URL . 'admin.php');
+                } else {
+                    header('Location: ' . BASE_URL . 'dashboard.php');
+                }
+                exit;
+            } else {
+                $errors[] = 'Email hoặc mật khẩu không chính xác.';
             }
-        }
-
-        if (!$user || !password_verify($password, $user['password'])) {
-            $errors[] = 'Email hoặc mật khẩu không chính xác.';
-        } else {
-            $_SESSION['user'] = [
-                'username' => $user['username'],
-                'email' => $user['email'],
-            ];
-
-            header('Location: ' . BASE_URL);
-            exit;
+        } catch (PDOException $e) {
+            $errors[] = 'Lỗi kết nối database: ' . $e->getMessage();
         }
     }
 }

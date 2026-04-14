@@ -28,24 +28,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $users = $_SESSION['users'] ?? [];
-        foreach ($users as $item) {
-            if (strtolower($item['email']) === strtolower($email)) {
-                $errors[] = 'Email này đã được sử dụng.';
-                break;
+        try {
+            $conn = new PDO("mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8", DB_USERNAME, DB_PASSWORD);
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            if ($stmt->fetch()) {
+                $errors[] = 'Email đã tồn tại vui lòng chọn email khác.';
             }
+
+            if (empty($errors)) {
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $role = 'user';
+                $status = 1;
+
+                $sql = "INSERT INTO users (name, email, password, role, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())";
+                $insertStmt = $conn->prepare($sql);
+                $insertStmt->execute([$username, $email, $hashedPassword, $role, $status]);
+
+                $message = 'Đăng ký thành công.Vui lòng đăng nhập.';
+            }
+        } catch (PDOException $e) {
+            $errors[] = 'Lỗi kết nối database: ' . $e->getMessage();
         }
-    }
-
-    if (empty($errors)) {
-        $users[] = [
-            'username' => $username,
-            'email' => $email,
-            'password' => password_hash($password, PASSWORD_DEFAULT),
-        ];
-
-        $_SESSION['users'] = $users;
-        $message = 'Đăng ký thành công. Vui lòng đăng nhập.';
     }
 }
 
