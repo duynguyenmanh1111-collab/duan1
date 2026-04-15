@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/configs/env.php';
 require_once __DIR__ . '/configs/helper.php';
+require_once __DIR__ . '/configs/pdo.php';
 
 if (!isset($_SESSION['user'])) {
     header('Location: ' . BASE_URL . 'login.php');
@@ -15,6 +16,16 @@ if ($_SESSION['user']['role'] === 'admin') {
 
 $pageTitle = 'Dashboard';
 $user = $_SESSION['user'];
+$items = [];
+$error = null;
+
+$conn = get_connection();
+if ($conn) {
+    ensure_tour_items_table($conn);
+    $items = get_tour_items($conn);
+} else {
+    $error = 'Không thể kết nối tới cơ sở dữ liệu để tải dữ liệu.';
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -45,136 +56,45 @@ $user = $_SESSION['user'];
 
     <div class="container mt-4">
         <h1><?= htmlspecialchars($pageTitle) ?></h1>
-        <div class="container-fluid py-4">
-            <h2 class="mb-4">Hệ thống Quản trị Du lịch của VIE TRAVEL</h2>
+        <p class="text-muted">Xin chào, <strong><?= htmlspecialchars($user['username']) ?></strong></p>
 
-            <div class="row">
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div
-                        class="card border-left-primary shadow h-100 py-2 border-0 border-start border-primary border-4">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng số Tour
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">128 Tour</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <?php if ($error): ?>
+            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
 
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div
-                        class="card border-left-success shadow h-100 py-2 border-0 border-start border-success border-4">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Booking mới
-                                        (24h)
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">12 đơn</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div class="card border-left-info shadow h-100 py-2 border-0 border-start border-info border-4">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Doanh thu tháng
-                                        này
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">450.000.000đ</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-3 col-md-6 mb-4">
-                    <div
-                        class="card border-left-warning shadow h-100 py-2 border-0 border-start border-warning border-4">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Phản hồi chờ
-                                        xử lý
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">8 tin nhắn</div>
-                                </div>
-                            </div>
-                        </div>
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Nội dung admin vừa thêm</h5>
+                        <p class="card-text">Dữ liệu do admin thêm sẽ xuất hiện ở đây cho người dùng xem.</p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="row mt-4">
-                <div class="col-lg-8 mb-4">
-                    <div class="card shadow">
-                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                            <h6 class="m-0 font-weight-bold text-primary">Danh sách Booking mới nhất</h6>
-                            <a href="#" class="btn btn-sm btn-primary">Xem tất cả</a>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Khách hàng</th>
-                                            <th>Tên Tour</th>
-                                            <th>Khởi hành</th>
-                                            <th>Trạng thái</th>
-                                            <th>Hành động</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Lê Văn C</td>
-                                            <td>Tour Đà Nẵng 3N2Đ</td>
-                                            <td>25/12/2024</td>
-                                            <td><span class="badge bg-warning text-dark">Chờ thanh toán</span></td>
-                                            <td><button class="btn btn-sm btn-outline-info">Chi tiết</button></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Phạm Thị D</td>
-                                            <td>Tour Sapa - Fansipan</td>
-                                            <td>01/01/2025</td>
-                                            <td><span class="badge bg-success">Đã xác nhận</span><s /td>
-                                            <td><button class="btn btn-sm btn-outline-info">Chi tiết</button></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+        <div class="row">
+            <?php if (empty($items)): ?>
+                <div class="col-12">
+                    <div class="alert alert-info">Hiện chưa có dữ liệu nào được admin thêm.</div>
+                </div>
+            <?php else: ?>
+                <?php foreach ($items as $item): ?>
+                    <div class="col-md-6 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-primary text-white">
+                                <?= htmlspecialchars($item['title']) ?>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text"><?= nl2br(htmlspecialchars($item['description'])) ?></p>
+                            </div>
+                            <div class="card-footer text-muted small">
+                                Thêm vào: <?= htmlspecialchars(date('d/m/Y H:i', strtotime($item['created_at']))) ?>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="col-lg-4 mb-4">
-                    <div class="card shadow">
-                        <div class="card-header bg-white py-3 text-primary font-weight-bold">
-                            Top Tour bán chạy
-                        </div>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Phú Quốc - Đảo Ngọc
-                                <span class="badge bg-primary rounded-pill">45 lượt</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Hạ Long - Ngủ đêm trên vịnh
-                                <span class="badge bg-primary rounded-pill">38 lượt</span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Đà Lạt - Thành phố mộng mơ
-                                <span class="badge bg-primary rounded-pill">32 lượt</span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
     </div>
 </body>
