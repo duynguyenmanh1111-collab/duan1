@@ -25,9 +25,20 @@
         <p class="text-muted">Xin chào, <strong><?= htmlspecialchars($user['username'] ?? 'duynguyenmanh') ?></strong>
         </p>
 
-        <?php if (isset($_GET['message'])): ?>
+        <?php if (!empty($message)): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?= htmlspecialchars($_GET['message']) ?>
+                <?= htmlspecialchars($message) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <ul class="mb-0">
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         <?php endif; ?>
@@ -37,17 +48,16 @@
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-primary text-white">Thêm dữ liệu cho user</div>
                     <div class="card-body">
-                        <form method="post" action="index.php?act=add-tour">
+                        <form method="post" action="admin.php">
+                            <input type="hidden" name="action" value="add_tour">
                             <div class="mb-3">
                                 <label class="form-label">Tiêu đề</label>
                                 <input type="text" class="form-control" name="title" required>
                             </div>
-
                             <div class="mb-3">
                                 <label class="form-label">Mô tả</label>
                                 <textarea class="form-control" name="description" rows="5" required></textarea>
                             </div>
-
                             <button type="submit" class="btn btn-success w-100">Lưu dữ liệu</button>
                         </form>
                     </div>
@@ -151,6 +161,73 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <span class="mb-0">Danh sách booking</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <?php if (empty($bookings)): ?>
+                            <div class="p-4 text-center text-muted">Chưa có booking nào.</div>
+                        <?php else: ?>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Khách hàng</th>
+                                            <th>Tour</th>
+                                            <th>Ngày khởi hành</th>
+                                            <th>Số khách</th>
+                                            <th>Thanh toán</th>
+                                            <th>Trạng thái</th>
+                                            <th>Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($bookings as $booking): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($booking['user_name'] ?? '') ?></td>
+                                                <td><?= htmlspecialchars($booking['tour_title'] ?? '') ?></td>
+                                                <td><?= htmlspecialchars(date('d/m/Y', strtotime($booking['booking_date'] ?? ''))) ?>
+                                                </td>
+                                                <td><?= htmlspecialchars((string) ($booking['quantity'] ?? '')) ?></td>
+                                                <td>
+                                                    <span
+                                                        class="badge <?= ($booking['payment_status'] ?? '') === 'Đã thanh toán' ? 'bg-success' : 'bg-secondary text-white' ?>">
+                                                        <?= htmlspecialchars($booking['payment_status'] ?? 'Chưa thanh toán') ?>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        class="badge <?= ($booking['status'] ?? '') === 'Đã xác nhận' ? 'bg-success' : (($booking['status'] ?? '') === 'Đã hủy' ? 'bg-danger' : 'bg-warning text-dark') ?>">
+                                                        <?= htmlspecialchars($booking['status'] ?? '') ?>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <form method="post" class="d-flex gap-1 mb-0">
+                                                        <input type="hidden" name="action" value="update_booking_status">
+                                                        <input type="hidden" name="booking_id"
+                                                            value="<?= htmlspecialchars($booking['id']) ?>">
+                                                        <button type="submit" name="status" value="Chờ xác nhận"
+                                                            class="btn btn-sm btn-outline-secondary">Chờ</button>
+                                                        <button type="submit" name="status" value="Đã xác nhận"
+                                                            class="btn btn-sm btn-outline-success">Xác nhận</button>
+                                                        <button type="submit" name="status" value="Đã hủy"
+                                                            class="btn btn-sm btn-outline-danger">Hủy</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

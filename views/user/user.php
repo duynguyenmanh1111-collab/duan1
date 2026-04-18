@@ -29,6 +29,14 @@
         <h1><?= htmlspecialchars($pageTitle) ?></h1>
         <p class="text-muted">Xin chào, <strong><?= htmlspecialchars($user['username']) ?></strong></p>
 
+        <?php if ($message): ?>
+            <div class="alert alert-success"><?= htmlspecialchars($message) ?></div>
+        <?php endif; ?>
+
+        <?php if ($bookingError): ?>
+            <div class="alert alert-danger"><?= htmlspecialchars($bookingError) ?></div>
+        <?php endif; ?>
+
         <?php if ($error): ?>
             <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
@@ -37,6 +45,56 @@
             <div class="card-body">
                 <h5 class="card-title">Nội dung admin vừa thêm</h5>
                 <p class="card-text">Những nội dung này được admin tạo và lưu trong cơ sở dữ liệu.</p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-success text-white">Lịch sử đặt tour của bạn</div>
+            <div class="card-body p-0">
+                <?php if (empty($bookings)): ?>
+                    <div class="p-4 text-center text-muted">Bạn chưa đặt tour nào.</div>
+                <?php else: ?>
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Tour</th>
+                                    <th>Ngày khởi hành</th>
+                                    <th>Số khách</th>
+                                    <th>Thanh toán</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($bookings as $booking): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($booking['tour_title']) ?></td>
+                                        <td><?= htmlspecialchars(date('d/m/Y', strtotime($booking['booking_date']))) ?></td>
+                                        <td><?= htmlspecialchars($booking['quantity']) ?></td>
+                                        <td>
+                                            <div>
+                                                <span
+                                                    class="badge <?= ($booking['payment_status'] ?? '') === 'Đã thanh toán' ? 'bg-success' : 'bg-secondary text-white' ?>">
+                                                    <?= htmlspecialchars($booking['payment_status'] ?? 'Chưa thanh toán') ?></span>
+                                            </div>
+                                            <?php if (($booking['payment_status'] ?? '') !== 'Đã thanh toán'): ?>
+                                                <div class="mt-1">
+                                                    <a href="<?= BASE_URL ?>payment.php?booking_id=<?= htmlspecialchars($booking['id']) ?>"
+                                                        class="btn btn-sm btn-warning">Thanh toán</a>
+                                                </div>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <span
+                                                class="badge <?= $booking['status'] === 'Đã xác nhận' ? 'bg-success' : ($booking['status'] === 'Đã hủy' ? 'bg-danger' : 'bg-warning text-dark') ?>">
+                                                <?= htmlspecialchars($booking['status']) ?></span>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -54,6 +112,23 @@
                             </div>
                             <div class="card-body">
                                 <p class="card-text"><?= nl2br(htmlspecialchars($item['description'])) ?></p>
+                                <form method="post" action="<?= BASE_URL ?>user.php" class="mt-3">
+                                    <input type="hidden" name="action" value="place_booking">
+                                    <input type="hidden" name="tour_id" value="<?= htmlspecialchars($item['id']) ?>">
+                                    <div class="row g-2">
+                                        <div class="col-7">
+                                            <label class="form-label small">Ngày khởi hành</label>
+                                            <input type="date" name="booking_date" class="form-control form-control-sm"
+                                                required>
+                                        </div>
+                                        <div class="col-5">
+                                            <label class="form-label small">Số khách</label>
+                                            <input type="number" name="quantity" class="form-control form-control-sm" min="1"
+                                                value="1" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-sm mt-3 w-100">Đặt tour</button>
+                                </form>
                             </div>
                             <div class="card-footer text-muted small">
                                 Thêm lúc: <?= htmlspecialchars(date('d/m/Y H:i', strtotime($item['created_at']))) ?>

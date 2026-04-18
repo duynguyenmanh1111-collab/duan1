@@ -1,4 +1,9 @@
 <?php
+
+namespace Controllers; // THÊM DÒNG NÀY ĐỂ ĐỒNG BỘ VỚI INDEX.PHP
+
+use Models\TourModel;
+
 class AdminTourController
 {
     private $tourModel;
@@ -20,6 +25,7 @@ class AdminTourController
             $pageTitle = "Quản lý danh sách Tour";
         }
 
+        // Giả lập session user nếu chưa có hệ thống login hoàn chỉnh
         $user = $_SESSION['user'] ?? ['username' => 'Admin', 'role' => 'Quản trị viên'];
 
         include 'views/admin/admin.php';

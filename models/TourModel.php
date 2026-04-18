@@ -1,11 +1,18 @@
 <?php
-class TourModel extends BaseModel
+
+namespace Models; // THÊM DÒNG NÀY ĐỂ Controller có thể "use Models\TourModel"
+
+// Không cần require_once 'BaseModel.php' ở đây vì index.php đã require rồi
+// Nhưng nếu bạn muốn chắc chắn, hãy dùng đường dẫn đúng hoặc để index lo
+use PDO; // Để sử dụng được class PDO bên trong file này
+
+class TourModel
 {
     private $conn;
 
     public function __construct()
     {
-        // Gọi hàm get_connection từ file pdo.php của bạn
+        // Hàm get_connection() nằm trong file pdo.php đã được require ở index.php
         $this->conn = get_connection();
     }
 
@@ -44,7 +51,8 @@ class TourModel extends BaseModel
         $stmt = $this->conn->prepare("DELETE FROM tour_items WHERE id = ?");
         return $stmt->execute([$id]);
     }
-    //tim kiem
+
+    // Tìm kiếm
     public function searchTours($keyword)
     {
         $sql = "SELECT * FROM tour_items WHERE title LIKE ? OR description LIKE ? ORDER BY id DESC";

@@ -8,11 +8,15 @@ require_once 'configs/pdo.php';
 require_once 'models/BaseModel.php';
 require_once 'models/TourModel.php';
 
-// 3. Require các Controllers
+// 3. Require các Controllers 
+// (Đảm bảo file HomeController.php và AdminTourController.php có dòng: namespace Controllers;)
 require_once 'controllers/HomeController.php';
 require_once 'controllers/AdminTourController.php';
 
-// 4. Lấy tham số act từ URL (mặc định là '/' nếu không có)
+use Controllers\HomeController;
+use Controllers\AdminTourController;
+
+// 4. Lấy tham số act từ URL
 $act = $_GET['act'] ?? '/';
 
 // 5. Điều hướng (Routing)
@@ -23,23 +27,18 @@ switch ($act) {
         break;
 
     // --- ROUTE QUẢN LÝ TOUR (ADMIN) ---
-
-    // Hiển thị danh sách Tour
     case 'list-tour':
         (new AdminTourController())->index();
         break;
 
-    // Xử lý thêm Tour mới
     case 'add-tour':
         (new AdminTourController())->store();
         break;
 
-    // Xử lý cập nhật Tour
     case 'update-tour':
         (new AdminTourController())->update();
         break;
 
-    // Xử lý xóa Tour
     case 'delete-tour':
         $id = $_GET['id'] ?? null;
         if ($id) {
@@ -49,7 +48,6 @@ switch ($act) {
         }
         break;
 
-    // Xem chi tiết một Tour
     case 'tour-detail':
         $id = $_GET['id'] ?? null;
         if ($id) {
@@ -59,16 +57,15 @@ switch ($act) {
         }
         break;
 
-    // --- CÁC ROUTE KHÁC (USER, AUTH...) ---
+    // --- CÁC ROUTE KHÁC ---
     case 'login':
-        // Gọi controller xử lý đăng nhập
+        // Code login...
         break;
 
     case 'logout':
-        // Gọi controller xử lý đăng xuất
+        // Code logout...
         break;
 
-    // Trang 404
     default:
         echo "404 - Trang không tồn tại!";
         break;

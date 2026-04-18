@@ -1,9 +1,12 @@
 <?php
 
+namespace Controllers; // BẮT BUỘC PHẢI CÓ DÒNG NÀY Ở ĐẦU FILE
+
 class HomeController
 {
     public function index()
     {
+        // Chú ý: Nếu dùng SESSION thì ở file index.php bạn nên có session_start() rồi nhé
         if (!isset($_SESSION['user'])) {
             header('Location: ' . BASE_URL . 'login.php');
             exit;
