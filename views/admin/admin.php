@@ -42,10 +42,12 @@
                                 <label class="form-label">Tiêu đề</label>
                                 <input type="text" class="form-control" name="title" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Mô tả</label>
                                 <textarea class="form-control" name="description" rows="5" required></textarea>
                             </div>
+
                             <button type="submit" class="btn btn-success w-100">Lưu dữ liệu</button>
                         </form>
                     </div>
