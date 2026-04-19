@@ -257,8 +257,14 @@ if ($conn) {
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                         <div class="card tour-card h-100 shadow-sm">
                             <div class="tour-img-container">
-                                <?php if (!empty($item['images'])): ?>
-                                    <img src="<?= BASE_URL . htmlspecialchars($item['images']) ?>" alt="<?= htmlspecialchars($item['name']) ?>">
+                                <?php
+                                    $tourImage = $item['image'] ?? $item['images'] ?? '';
+                                    if (!empty($tourImage)):
+                                        $imageSrc = preg_match('#^(https?://|/|data:)#', $tourImage)
+                                            ? $tourImage
+                                            : BASE_ASSETS_UPLOADS . ltrim($tourImage, '/');
+                                ?>
+                                    <img src="<?= htmlspecialchars($imageSrc) ?>" alt="<?= htmlspecialchars($item['name'] ?? $item['title'] ?? 'Tour') ?>">
                                 <?php else: ?>
                                     <i class="fa-regular fa-image fa-3x text-light"></i>
                                 <?php endif; ?>
