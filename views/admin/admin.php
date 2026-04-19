@@ -28,18 +28,18 @@
         <?php if (!empty($message)): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <?= htmlspecialchars($message) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <?php if (!empty($errors)): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show">
                 <ul class="mb-0">
                     <?php foreach ($errors as $error): ?>
                         <li><?= htmlspecialchars($error) ?></li>
                     <?php endforeach; ?>
                 </ul>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
@@ -48,16 +48,39 @@
                 <div class="card shadow-sm border-0">
                     <div class="card-header bg-primary text-white">Thêm dữ liệu cho user</div>
                     <div class="card-body">
-                        <form method="post" action="admin.php">
+                        <!-- 🔥 thêm enctype -->
+                        <form method="post" action="admin.php" enctype="multipart/form-data">
                             <input type="hidden" name="action" value="add_tour">
+
                             <div class="mb-3">
                                 <label class="form-label">Tiêu đề</label>
                                 <input type="text" class="form-control" name="title" required>
                             </div>
+
                             <div class="mb-3">
                                 <label class="form-label">Mô tả</label>
                                 <textarea class="form-control" name="description" rows="5" required></textarea>
                             </div>
+
+                            <!-- ✅ THÊM -->
+                            <div class="mb-3">
+                                <label class="form-label">Giá tour</label>
+                                <input type="number" class="form-control" name="price">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Danh mục</label>
+                                <select class="form-select" name="category">
+                                    <option value="Nội địa">Nội địa</option>
+                                    <option value="Quốc tế">Quốc tế</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Hình ảnh</label>
+                                <input type="file" class="form-control" name="image">
+                            </div>
+
                             <button type="submit" class="btn btn-success w-100">Lưu dữ liệu</button>
                         </form>
                     </div>
@@ -77,14 +100,10 @@
                                 <button type="submit" class="btn btn-light">
                                     <i class="bi bi-search"></i> Tìm
                                 </button>
-                                <?php if (!empty($_GET['keyword'])): ?>
-                                    <a href="index.php?act=list-tour" class="btn btn-outline-light">
-                                        <i class="bi bi-x-circle"></i>
-                                    </a>
-                                <?php endif; ?>
                             </div>
                         </form>
                     </div>
+
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
@@ -93,10 +112,17 @@
                                         <th class="text-center" style="width: 50px;">STT</th>
                                         <th>Tiêu đề</th>
                                         <th>Mô tả</th>
+
+                                        <!-- ✅ THÊM -->
+                                        <th>Danh mục</th>
+                                        <th>Giá</th>
+                                        <th>Ảnh</th>
+
                                         <th>Ngày tạo</th>
                                         <th class="text-center">Hành động</th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                     <?php if (!empty($items)):
                                         $stt = 1;
@@ -105,59 +131,71 @@
                                                 <td class="text-center"><?= $stt++ ?></td>
                                                 <td class="fw-bold"><?= htmlspecialchars($item['title']) ?></td>
                                                 <td><?= htmlspecialchars($item['description']) ?></td>
+
+                                                <!-- ✅ HIỂN THỊ -->
+                                                <td><?= htmlspecialchars($item['category'] ?? '') ?></td>
+                                                <td><?= number_format($item['price'] ?? 0) ?>đ</td>
+                                                <td>
+                                                    <?php if (!empty($item['image'])): ?>
+                                                        <img src="uploads/<?= $item['image'] ?>" width="60">
+                                                    <?php endif; ?>
+                                                </td>
+
                                                 <td><?= date('d/m/Y H:i', strtotime($item['created_at'])) ?></td>
+
                                                 <td class="text-center">
                                                     <div class="d-flex justify-content-center gap-1">
                                                         <a href="index.php?act=tour-detail&id=<?= $item['id'] ?>"
                                                             class="btn btn-info btn-sm text-white">Chi tiết</a>
+
                                                         <button class="btn btn-warning btn-sm text-white" data-bs-toggle="modal"
                                                             data-bs-target="#editModal<?= $item['id'] ?>">Sửa</button>
+
                                                         <a href="index.php?act=delete-tour&id=<?= $item['id'] ?>"
-                                                            class="btn btn-danger btn-sm"
-                                                            onclick="return confirm('Xác nhận xóa?')">Xóa</a>
+                                                            class="btn btn-danger btn-sm">Xóa</a>
                                                     </div>
                                                 </td>
                                             </tr>
 
-                                            <div class="modal fade" id="editModal<?= $item['id'] ?>" tabindex="-1"
-                                                aria-hidden="true">
+                                            <!-- MODAL -->
+                                            <div class="modal fade" id="editModal<?= $item['id'] ?>">
                                                 <div class="modal-dialog">
-                                                    <div class="modal-content text-dark">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Sửa Tour #<?= $item['id'] ?></h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <form action="index.php?act=update-tour" method="POST">
-                                                            <div class="modal-body text-start">
+                                                    <div class="modal-content">
+                                                        <form action="index.php?act=update-tour" method="POST"
+                                                            enctype="multipart/form-data">
+                                                            <div class="modal-body">
+
                                                                 <input type="hidden" name="id" value="<?= $item['id'] ?>">
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Tiêu đề</label>
-                                                                    <input type="text" name="title" class="form-control"
-                                                                        value="<?= htmlspecialchars($item['title']) ?>"
-                                                                        required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Mô tả</label>
-                                                                    <textarea name="description" class="form-control" rows="4"
-                                                                        required><?= htmlspecialchars($item['description']) ?></textarea>
-                                                                </div>
+
+                                                                <input type="text" name="title" value="<?= $item['title'] ?>"
+                                                                    class="form-control mb-2">
+
+                                                                <textarea name="description"
+                                                                    class="form-control mb-2"><?= $item['description'] ?></textarea>
+
+                                                                <!-- ✅ THÊM -->
+                                                                <input type="number" name="price"
+                                                                    value="<?= $item['price'] ?? '' ?>"
+                                                                    class="form-control mb-2">
+
+                                                                <select name="category" class="form-select mb-2">
+                                                                    <option <?= ($item['category'] ?? '') == 'Nội địa' ? 'selected' : '' ?>>Nội địa</option>
+                                                                    <option <?= ($item['category'] ?? '') == 'Quốc tế' ? 'selected' : '' ?>>Quốc tế</option>
+                                                                </select>
+
+                                                                <input type="file" name="image" class="form-control">
+
                                                             </div>
+
                                                             <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Đóng</button>
-                                                                <button type="submit" class="btn btn-primary">Lưu thay
-                                                                    đổi</button>
+                                                                <button class="btn btn-primary">Lưu</button>
                                                             </div>
                                                         </form>
                                                     </div>
                                                 </div>
                                             </div>
-                                        <?php endforeach; else: ?>
-                                        <tr>
-                                            <td colspan="5" class="text-center p-3">Không tìm thấy dữ liệu nào</td>
-                                        </tr>
-                                    <?php endif; ?>
+
+                                        <?php endforeach; endif; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -166,6 +204,7 @@
             </div>
         </div>
 
+        <!-- giữ nguyên phần booking của bạn -->
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card shadow-sm border-0">
@@ -210,16 +249,33 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <form method="post" class="d-flex gap-1 mb-0">
+                                                    <!-- FORM UPDATE STATUS (giữ nguyên) -->
+                                                    <form method="post" class="d-flex gap-1 mb-1">
                                                         <input type="hidden" name="action" value="update_booking_status">
                                                         <input type="hidden" name="booking_id"
                                                             value="<?= htmlspecialchars($booking['id']) ?>">
+
                                                         <button type="submit" name="status" value="Chờ xác nhận"
                                                             class="btn btn-sm btn-outline-secondary">Chờ</button>
+
                                                         <button type="submit" name="status" value="Đã xác nhận"
                                                             class="btn btn-sm btn-outline-success">Xác nhận</button>
+
                                                         <button type="submit" name="status" value="Đã hủy"
                                                             class="btn btn-sm btn-outline-danger">Hủy</button>
+                                                    </form>
+
+                                                    <!-- 🔥 THÊM FORM XÓA -->
+                                                    <form method="post"
+                                                        onsubmit="return confirm('Bạn có chắc muốn xóa booking này?')">
+
+                                                        <input type="hidden" name="action" value="delete_booking">
+                                                        <input type="hidden" name="booking_id"
+                                                            value="<?= htmlspecialchars($booking['id']) ?>">
+
+                                                        <button type="submit" class="btn btn-sm btn-danger w-100">
+                                                            Xóa
+                                                        </button>
                                                     </form>
                                                 </td>
                                             </tr>

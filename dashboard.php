@@ -4,6 +4,7 @@ require_once __DIR__ . '/configs/env.php';
 require_once __DIR__ . '/configs/helper.php';
 require_once __DIR__ . '/configs/pdo.php';
 
+
 if (!isset($_SESSION['user'])) {
     header('Location: ' . BASE_URL . 'login.php');
     exit;
@@ -23,8 +24,8 @@ $error = null;
 
 $conn = get_connection();
 if ($conn) {
-    ensure_tour_items_table($conn);
-    ensure_bookings_table($conn);
+    // ensure_tour_items_table($conn);
+    // ensure_bookings_table($conn);
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'place_booking') {
         $tourId = intval($_POST['tour_id'] ?? 0);
@@ -102,6 +103,39 @@ if ($conn) {
             border-radius: 0 0 20px 20px;
         }
 
+        .hero-slider {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .hero-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
+
         /* Search Bar */
         .search-container {
             margin-top: -50px;
@@ -147,6 +181,21 @@ if ($conn) {
             font-weight: bold;
             font-size: 1.2rem;
         }
+
+        /* FIX banner slider */
+        .carousel-item img {
+            height: 400px;
+            object-fit: cover;
+            border-radius: 0 0 20px 20px;
+        }
+
+        /* đảm bảo search nổi lên trên */
+        .search-container {
+            position: relative;
+            z-index: 10;
+            margin-top: -70px;
+            /* chỉnh lại cho đẹp hơn */
+        }
     </style>
 </head>
 
@@ -164,10 +213,24 @@ if ($conn) {
         </div>
     </nav>
 
-    <header class="hero">
-        <div class="container">
-            <h1 class="fw-bold display-4">Bạn muốn đi đâu?</h1>
-            <p class="lead">Khám phá hàng ngàn Tour du lịch hấp dẫn với giá tốt nhất.</p>
+    <header class="hero-slider">
+        <!-- <div class="hero-slide active"
+            style="background-image: url('https://images.unsplash.com/photo-1506929113675-b55f248b6d33?auto=format&fit=crop&w=1350&q=80');">
+        </div> -->
+
+        <div class="hero-slide"
+            style="background-image: url('https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1350&q=80');">
+        </div>
+
+        <div class="hero-slide"
+            style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1350&q=80');">
+        </div>
+
+        <div class="hero-overlay">
+            <div>
+                <h1 class="fw-bold display-4">Bạn muốn đi đâu?</h1>
+                <p class="lead">Khám phá hàng ngàn Tour du lịch hấp dẫn với giá tốt nhất.</p>
+            </div>
         </div>
     </header>
 
@@ -222,17 +285,24 @@ if ($conn) {
                     <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                         <div class="card tour-card h-100 shadow-sm">
                             <div class="tour-img">
-                                <i class="fa-regular fa-image fa-3x"></i>
+                                <?php if (!empty($item['image'])): ?>
+                                    <img src="<?= BASE_URL . htmlspecialchars($item['image']) ?>"
+                                        style="width:100%;height:100%;object-fit:cover;">
+                                <?php else: ?>
+                                    <i class="fa-regular fa-image fa-3x"></i>
+                                <?php endif; ?>
                             </div>
                             <div class="card-body">
-                                <span class="badge bg-light text-primary mb-2">Tour trọn gói</span>
+                                <span class="badge bg-info mb-2">
+                                    <?= htmlspecialchars($item['category'] ?? 'Chưa phân loại') ?>
+                                </span>
                                 <h6 class="card-title fw-bold text-truncate"><?= htmlspecialchars($item['title']) ?></h6>
                                 <p class="card-text text-muted small mb-3"
                                     style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                                     <?= htmlspecialchars($item['description']) ?>
                                 </p>
-                                <div class="mb-3">
-                                    <div class="price-tag">2.500.000đ</div>
+                                <div class="price-tag">
+                                    <?= number_format($item['price'] ?? 0) ?>đ
                                 </div>
                                 <form method="post" action="<?= BASE_URL ?>dashboard.php" class="mb-2">
                                     <input type="hidden" name="action" value="place_booking">
@@ -310,7 +380,16 @@ if ($conn) {
             &copy; 2026 VIE travele Project. Code by DUY THUAN DAT.
         </div>
     </footer>
+    <script>
+        const slides = document.querySelectorAll('.hero-slide');
+        let current = 0;
 
+        setInterval(() => {
+            slides[current].classList.remove('active');
+            current = (current + 1) % slides.length;
+            slides[current].classList.add('active');
+        }, 3000); // 3 giây đổi ảnh
+    </script>
 </body>
 
 </html>
