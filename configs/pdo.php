@@ -16,7 +16,7 @@ function ensure_tour_items_table(PDO $conn): void
 {
     $sql = "CREATE TABLE IF NOT EXISTS tour_items (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
 
         -- 👇 THÊM MỚI
@@ -28,12 +28,28 @@ function ensure_tour_items_table(PDO $conn): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
     $conn->exec($sql);
+
+    // Check if 'title' column exists and rename to 'name'
+    $stmt = $conn->query("SHOW COLUMNS FROM tour_items LIKE 'title'");
+    if ($stmt->fetch()) {
+        $conn->exec("ALTER TABLE tour_items CHANGE title name VARCHAR(255) NOT NULL");
+    }
+
+    // Add missing columns if they don't exist
+    $columns = ['image' => "VARCHAR(255) DEFAULT ''", 'category' => "VARCHAR(100) DEFAULT ''", 'price' => "INT DEFAULT 0"];
+    foreach ($columns as $col => $def) {
+        $stmt = $conn->prepare("SHOW COLUMNS FROM tour_items LIKE ?");
+        $stmt->execute([$col]);
+        if (!$stmt->fetch()) {
+            $conn->exec("ALTER TABLE tour_items ADD COLUMN $col $def");
+        }
+    }
 }
 
 function add_tour_item($conn, $title, $description, $image, $category, $price)
 {
     $stmt = $conn->prepare("
-        INSERT INTO tour_items (title, description, image, category, price)
+        INSERT INTO tour_items (name, description, image, category, price)
         VALUES (?, ?, ?, ?, ?)
     ");
     return $stmt->execute([$title, $description, $image, $category, $price]);
@@ -42,7 +58,7 @@ function add_tour_item($conn, $title, $description, $image, $category, $price)
 function get_tour_items(PDO $conn): array
 {
     $stmt = $conn->query("
-        SELECT id, title, description, image, category, price, created_at 
+        SELECT id, name, description, image, category, price, created_at 
         FROM tour_items 
         ORDER BY created_at DESC
     ");
@@ -65,6 +81,26 @@ function ensure_bookings_table(PDO $conn): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
 
     $conn->exec($sql);
+
+    // Add missing columns if they don't exist
+    $columns = [
+        'user_id' => "INT NOT NULL",
+        'user_name' => "VARCHAR(255)",
+        'tour_id' => "INT NOT NULL",
+        'tour_title' => "VARCHAR(255)",
+        'booking_date' => "DATE",
+        'quantity' => "INT DEFAULT 1",
+        'payment_status' => "VARCHAR(50) DEFAULT 'Chưa thanh toán'",
+        'status' => "VARCHAR(50) DEFAULT 'Chờ xác nhận'",
+        'created_at' => "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+    ];
+    foreach ($columns as $col => $def) {
+        $stmt = $conn->prepare("SHOW COLUMNS FROM bookings LIKE ?");
+        $stmt->execute([$col]);
+        if (!$stmt->fetch()) {
+            $conn->exec("ALTER TABLE bookings ADD COLUMN $col $def");
+        }
+    }
 }
 function get_all_bookings(PDO $conn): array
 {
