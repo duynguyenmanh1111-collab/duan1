@@ -155,4 +155,4 @@ function get_user_bookings(PDO $conn, int $userId): array
     $stmt = $conn->prepare("SELECT * FROM bookings WHERE user_id = ? ORDER BY id DESC");
     $stmt->execute([$userId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+}g
