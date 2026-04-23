@@ -42,10 +42,10 @@ if ($conn) {
             } else {
                 $userId = intval($user['id']);
                 $userName = $user['username'] ?? ($user['name'] ?? 'Người dùng');
-                
+
                 // Đồng bộ với database: sử dụng 'name' thay vì 'title'
-                $tourTitle = $tour['name'] ?? 'Tour không tên'; 
-                
+                $tourTitle = $tour['name'] ?? 'Tour không tên';
+
                 if (add_booking($conn, $userId, $userName, $tourId, $tourTitle, $bookingDate, $quantity)) {
                     $message = 'Đặt tour thành công! Admin sẽ liên hệ xác nhận.';
                 } else {
@@ -180,20 +180,63 @@ if ($conn) {
 
 <body>
 
-    <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container">
-            <a class="navbar-brand" href="#"><i class="fa-solid fa-paper-plane"></i> VIE travele</a>
+    <nav class="navbar navbar-light bg-white shadow-sm px-2">
+        <div class="d-flex align-items-center w-100">
+
+
+            <button class="btn btn-outline-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#menuSidebar"
+                style="margin-left:5px;">
+                ☰
+            </button>
+
+
+            <span class="navbar-brand mb-0 fw-bold text-primary">
+                VIE Travel
+            </span>
+
+
             <div class="ms-auto d-flex align-items-center">
-                <span class="me-3 d-none d-md-block text-muted small">Chào, <?= htmlspecialchars($user['username'] ?? 'Bạn') ?></span>
-                <a href="<?= BASE_URL ?>logout.php" class="btn btn-outline-primary btn-sm rounded-pill px-4">Đăng xuất</a>
+                <span class="me-3 d-none d-md-block text-muted small">Chào,
+                    <?= htmlspecialchars($user['username']) ?></span>
+                <a href="<?= BASE_URL ?>logout.php" class="btn btn-outline-primary btn-sm rounded-pill px-4">Đăng
+                    xuất</a>
             </div>
+
         </div>
     </nav>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="menuSidebar">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+
+        <div class="offcanvas-body">
+
+            <a href="dashboard.php" class="btn btn-outline-primary w-100 mb-2">
+                Trang chủ
+            </a>
+
+            <a href="booking.php" class="btn btn-outline-success w-100 mb-2">
+                Lịch sử booking
+            </a>
+
+            <a href="payment.php" class="btn btn-outline-warning w-100 mb-2">
+                Thanh toán
+            </a>
+
+        </div>
+    </div>
 
     <header class="hero-slider">
-        <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1506929113675-b55f248b6d33?auto=format&fit=crop&w=1350&q=80');"></div>
-        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1350&q=80');"></div>
-        <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1350&q=80');"></div>
+        <div class="hero-slide active"
+            style="background-image: url('https://images.unsplash.com/photo-1506929113675-b55f248b6d33?auto=format&fit=crop&w=1350&q=80');">
+        </div>
+        <div class="hero-slide"
+            style="background-image: url('https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1350&q=80');">
+        </div>
+        <div class="hero-slide"
+            style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1350&q=80');">
+        </div>
 
         <div class="hero-overlay">
             <div>
@@ -208,13 +251,16 @@ if ($conn) {
             <div class="row g-2">
                 <div class="col-md-5">
                     <div class="input-group">
-                        <span class="input-group-text bg-transparent border-end-0"><i class="fa fa-location-dot text-primary"></i></span>
-                        <input type="text" class="form-control border-start-0" placeholder="Thành phố, địa điểm du lịch...">
+                        <span class="input-group-text bg-transparent border-end-0"><i
+                                class="fa fa-location-dot text-primary"></i></span>
+                        <input type="text" class="form-control border-start-0"
+                            placeholder="Thành phố, địa điểm du lịch...">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="input-group">
-                        <span class="input-group-text bg-transparent border-end-0"><i class="fa fa-calendar text-primary"></i></span>
+                        <span class="input-group-text bg-transparent border-end-0"><i
+                                class="fa fa-calendar text-primary"></i></span>
                         <input type="date" class="form-control border-start-0">
                     </div>
                 </div>
@@ -249,7 +295,8 @@ if ($conn) {
         <div class="row">
             <?php if (empty($items)): ?>
                 <div class="col-12 text-center py-5">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1053/1053210.png" width="80" class="opacity-25 mb-3" alt="No data">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1053/1053210.png" width="80" class="opacity-25 mb-3"
+                        alt="No data">
                     <p class="text-muted">Hiện chưa có tour nào khả dụng. Vui lòng quay lại sau!</p>
                 </div>
             <?php else: ?>
@@ -258,13 +305,14 @@ if ($conn) {
                         <div class="card tour-card h-100 shadow-sm">
                             <div class="tour-img-container">
                                 <?php
-                                    $tourImage = $item['image'] ?? $item['images'] ?? '';
-                                    if (!empty($tourImage)):
-                                        $imageSrc = preg_match('#^(https?://|/|data:)#', $tourImage)
-                                            ? $tourImage
-                                            : BASE_ASSETS_UPLOADS . ltrim($tourImage, '/');
-                                ?>
-                                    <img src="<?= htmlspecialchars($imageSrc) ?>" alt="<?= htmlspecialchars($item['name'] ?? $item['title'] ?? 'Tour') ?>">
+                                $tourImage = $item['image'] ?? $item['images'] ?? '';
+                                if (!empty($tourImage)):
+                                    $imageSrc = preg_match('#^(https?://|/|data:)#', $tourImage)
+                                        ? $tourImage
+                                        : BASE_ASSETS_UPLOADS . ltrim($tourImage, '/');
+                                    ?>
+                                    <img src="<?= htmlspecialchars($imageSrc) ?>"
+                                        alt="<?= htmlspecialchars($item['name'] ?? $item['title'] ?? 'Tour') ?>">
                                 <?php else: ?>
                                     <i class="fa-regular fa-image fa-3x text-light"></i>
                                 <?php endif; ?>
@@ -273,26 +321,31 @@ if ($conn) {
                                 <span class="badge bg-info mb-2 align-self-start">
                                     <?= htmlspecialchars($item['category_name'] ?? ($item['category_id'] ?? 'Du lịch')) ?>
                                 </span>
-                                <h6 class="card-title fw-bold text-truncate"><?= htmlspecialchars($item['name'] ?? 'Không tên') ?></h6>
-                                <p class="card-text text-muted small mb-3" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                <h6 class="card-title fw-bold text-truncate">
+                                    <?= htmlspecialchars($item['name'] ?? 'Không tên') ?>
+                                </h6>
+                                <p class="card-text text-muted small mb-3"
+                                    style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                                     <?= htmlspecialchars($item['description'] ?? '') ?>
                                 </p>
                                 <div class="price-tag mb-3">
                                     <?= number_format($item['price'] ?? 0) ?>đ
                                 </div>
-                                
+
                                 <form method="post" action="dashboard.php" class="mt-auto">
                                     <input type="hidden" name="action" value="place_booking">
                                     <input type="hidden" name="tour_id" value="<?= htmlspecialchars($item['id']) ?>">
                                     <div class="mb-2">
                                         <label class="small text-muted">Ngày khởi hành:</label>
-                                        <input type="date" name="booking_date" class="form-control form-control-sm" required min="<?= date('Y-m-d') ?>">
+                                        <input type="date" name="booking_date" class="form-control form-control-sm" required
+                                            min="<?= date('Y-m-d') ?>">
                                     </div>
                                     <div class="mb-2">
                                         <label class="small text-muted">Số lượng khách:</label>
-                                        <input type="number" name="quantity" class="form-control form-control-sm" min="1" value="1" required>
+                                        <input type="number" name="quantity" class="form-control form-control-sm" min="1"
+                                            value="1" required>
                                     </div>
-                                    <button type="submit" class="btn btn-primary btn-sm w-100 shadow-sm">Đặt ngay</button>
+                                    <button type="submit" class="btn btn-primary btn-sm w-100">Đặt tour</button>
                                 </form>
                             </div>
                         </div>
@@ -321,5 +374,7 @@ if ($conn) {
             }, 4000);
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
