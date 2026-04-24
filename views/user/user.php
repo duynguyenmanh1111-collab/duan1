@@ -59,7 +59,7 @@
                             <thead>
                                 <tr>
                                     <th>Tour</th>
-                                    <th>Ngày khởi hành</th>
+                                    <th>Thời gian</th>
                                     <th>Số khách</th>
                                     <th>Thanh toán</th>
                                     <th>Trạng thái</th>
@@ -69,8 +69,20 @@
                                 <?php foreach ($bookings as $booking): ?>
                                     <tr>
                                         <td><?= htmlspecialchars($booking['tour_title']) ?></td>
-                                        <td><?= htmlspecialchars(date('d/m/Y', strtotime($booking['booking_date']))) ?></td>
-                                        <td><?= htmlspecialchars($booking['quantity']) ?></td>
+                                        <td>
+                                            <small>
+                                                BD:
+                                                <?= htmlspecialchars(date('d/m/Y', strtotime($booking['booking_date']))) ?><br>
+                                                KT:
+                                                <?= !empty($booking['end_date']) ? htmlspecialchars(date('d/m/Y', strtotime($booking['end_date']))) : '---' ?>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <small>
+                                                NL: <?= htmlspecialchars($booking['adult_count'] ?? $booking['quantity']) ?><br>
+                                                TE: <?= htmlspecialchars($booking['child_count'] ?? 0) ?>
+                                            </small>
+                                        </td>
                                         <td>
                                             <div>
                                                 <span
@@ -80,7 +92,7 @@
                                             <?php if (($booking['payment_status'] ?? '') !== 'Đã thanh toán'): ?>
                                                 <div class="mt-1">
                                                     <a href="<?= BASE_URL ?>payment.php?booking_id=<?= htmlspecialchars($booking['id']) ?>"
-                                                        class="btn btn-sm btn-warning">Thanh toán</a>
+                                                        class="btn btn-sm btn-warning" style="font-size: 10px;">Thanh toán</a>
                                                 </div>
                                             <?php endif; ?>
                                         </td>
@@ -112,22 +124,38 @@
                             </div>
                             <div class="card-body">
                                 <p class="card-text"><?= nl2br(htmlspecialchars($item['description'])) ?></p>
+
                                 <form method="post" action="<?= BASE_URL ?>user.php" class="mt-3">
                                     <input type="hidden" name="action" value="place_booking">
                                     <input type="hidden" name="tour_id" value="<?= htmlspecialchars($item['id']) ?>">
-                                    <div class="row g-2">
-                                        <div class="col-7">
-                                            <label class="form-label small">Ngày khởi hành</label>
+
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-6">
+                                            <label class="form-label small fw-bold">Ngày khởi hành</label>
                                             <input type="date" name="booking_date" class="form-control form-control-sm"
                                                 required>
                                         </div>
-                                        <div class="col-5">
-                                            <label class="form-label small">Số khách</label>
-                                            <input type="number" name="quantity" class="form-control form-control-sm" min="1"
-                                                value="1" required>
+                                        <div class="col-6">
+                                            <label class="form-label small fw-bold">Ngày kết thúc</label>
+                                            <input type="date" name="end_date" class="form-control form-control-sm" required>
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary btn-sm mt-3 w-100">Đặt tour</button>
+
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label small fw-bold">Người lớn</label>
+                                            <input type="number" name="adult_count" class="form-control form-control-sm" min="1"
+                                                value="1" required>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small fw-bold">Trẻ em</label>
+                                            <input type="number" name="child_count" class="form-control form-control-sm" min="0"
+                                                value="0">
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary btn-sm mt-3 w-100 fw-bold">Đặt tour
+                                        ngay</button>
                                 </form>
                             </div>
                             <div class="card-footer text-muted small">

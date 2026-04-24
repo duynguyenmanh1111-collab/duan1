@@ -25,8 +25,6 @@ $error = null;
 
 $conn = get_connection();
 if ($conn) {
-    ensure_tour_items_table($conn);
-    ensure_bookings_table($conn);
     // Xử lý đặt tour
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'place_booking') {
         $tourId = intval($_POST['tour_id'] ?? 0);
@@ -36,16 +34,19 @@ if ($conn) {
         if ($tourId <= 0 || $bookingDate === '') {
             $bookingError = 'Vui lòng chọn tour và ngày khởi hành.';
         } else {
-            $tour = get_tour_by_id($conn, $tourId);
+            // Lấy thông tin tour để lấy tên và giá
+            $stmt = $conn->prepare("SELECT * FROM tour_items WHERE id = ?");
+            $stmt->execute([$tourId]);
+            $tour = $stmt->fetch();
+
             if (!$tour) {
                 $bookingError = 'Tour không tồn tại.';
             } else {
                 $userId = intval($user['id']);
                 $userName = $user['username'] ?? ($user['name'] ?? 'Người dùng');
-
-                // Đồng bộ với database: sử dụng 'name' thay vì 'title'
                 $tourTitle = $tour['name'] ?? 'Tour không tên';
 
+                // Gọi hàm thêm booking (Đảm bảo hàm add_booking trong helper.php xử lý đúng số lượng cột)
                 if (add_booking($conn, $userId, $userName, $tourId, $tourTitle, $bookingDate, $quantity)) {
                     $message = 'Đặt tour thành công! Admin sẽ liên hệ xác nhận.';
                 } else {
@@ -55,9 +56,8 @@ if ($conn) {
         }
     }
 
-    // Lấy danh sách tour và lịch sử đặt chỗ
-    $items = get_tour_items($conn);
-    $bookings = get_user_bookings($conn, intval($user['id']));
+    // Lấy danh sách tour - Sắp xếp mới nhất lên đầu
+    $items = $conn->query("SELECT * FROM tour_items ORDER BY id DESC")->fetchAll();
 } else {
     $error = 'Không thể kết nối cơ sở dữ liệu.';
 }
@@ -117,7 +117,7 @@ if ($conn) {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -157,7 +157,7 @@ if ($conn) {
 
         .tour-img-container {
             height: 180px;
-            background: #e9ecef;
+            background: #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -182,48 +182,29 @@ if ($conn) {
 
     <nav class="navbar navbar-light bg-white shadow-sm px-2">
         <div class="d-flex align-items-center w-100">
-
-
             <button class="btn btn-outline-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#menuSidebar"
                 style="margin-left:5px;">
                 ☰
             </button>
-
-
-            <span class="navbar-brand mb-0 fw-bold text-primary">
-                VIE Travel
-            </span>
-
-
+            <span class="navbar-brand mb-0 fw-bold text-primary">VIE Travel</span>
             <div class="ms-auto d-flex align-items-center">
                 <span class="me-3 d-none d-md-block text-muted small">Chào,
                     <?= htmlspecialchars($user['username']) ?></span>
                 <a href="<?= BASE_URL ?>logout.php" class="btn btn-outline-primary btn-sm rounded-pill px-4">Đăng
                     xuất</a>
             </div>
-
         </div>
     </nav>
+
     <div class="offcanvas offcanvas-start" tabindex="-1" id="menuSidebar">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title">Menu</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
         </div>
-
         <div class="offcanvas-body">
-
-            <a href="dashboard.php" class="btn btn-outline-primary w-100 mb-2">
-                Trang chủ
-            </a>
-
-            <a href="booking.php" class="btn btn-outline-success w-100 mb-2">
-                Lịch sử booking
-            </a>
-
-            <a href="payment.php" class="btn btn-outline-warning w-100 mb-2">
-                Thanh toán
-            </a>
-
+            <a href="dashboard.php" class="btn btn-outline-primary w-100 mb-2">Trang chủ</a>
+            <a href="booking.php" class="btn btn-outline-success w-100 mb-2">Lịch sử booking</a>
+            <a href="payment.php" class="btn btn-outline-warning w-100 mb-2">Thanh toán</a>
         </div>
     </div>
 
@@ -237,11 +218,10 @@ if ($conn) {
         <div class="hero-slide"
             style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1350&q=80');">
         </div>
-
         <div class="hero-overlay">
             <div>
-                <h1 class="fw-bold display-4">Bạn muốn đi đâu?</h1>
-                <p class="lead">Khám phá hàng ngàn Tour du lịch hấp dẫn với giá tốt nhất.</p>
+                <h1 class="fw-bold display-4 text-white">Bạn muốn đi đâu?</h1>
+                <p class="lead text-white">Khám phá hàng ngàn Tour du lịch hấp dẫn với giá tốt nhất.</p>
             </div>
         </div>
     </header>
@@ -288,10 +268,6 @@ if ($conn) {
             </div>
         <?php endif; ?>
 
-        <?php if ($error): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-
         <div class="row">
             <?php if (empty($items)): ?>
                 <div class="col-12 text-center py-5">
@@ -305,36 +281,35 @@ if ($conn) {
                         <div class="card tour-card h-100 shadow-sm">
                             <div class="tour-img-container">
                                 <?php
-                                $tourImage = $item['image'] ?? $item['images'] ?? '';
-                                if (!empty($tourImage)):
-                                    $imageSrc = preg_match('#^(https?://|/|data:)#', $tourImage)
-                                        ? $tourImage
-                                        : BASE_ASSETS_UPLOADS . ltrim($tourImage, '/');
-                                    ?>
-                                    <img src="<?= htmlspecialchars($imageSrc) ?>"
-                                        alt="<?= htmlspecialchars($item['name'] ?? $item['title'] ?? 'Tour') ?>">
+                                // FIX LỖI ẢNH: Kiểm tra và hiển thị ảnh từ thư mục uploads
+                                $imageName = $item['image'] ?? '';
+                                if (!empty($imageName)): ?>
+                                    <img src="uploads/<?= htmlspecialchars($imageName) ?>"
+                                        alt="<?= htmlspecialchars($item['name']) ?>"
+                                        onerror="this.src='https://placehold.co/600x400?text=No+Image'">
                                 <?php else: ?>
                                     <i class="fa-regular fa-image fa-3x text-light"></i>
                                 <?php endif; ?>
                             </div>
                             <div class="card-body d-flex flex-column">
                                 <span class="badge bg-info mb-2 align-self-start">
-                                    <?= htmlspecialchars($item['category_name'] ?? ($item['category_id'] ?? 'Du lịch')) ?>
+                                    <?= htmlspecialchars($item['category'] ?? 'Du lịch') ?>
                                 </span>
-                                <h6 class="card-title fw-bold text-truncate">
-                                    <?= htmlspecialchars($item['name'] ?? 'Không tên') ?>
+                                <h6 class="card-title fw-bold text-truncate" title="<?= htmlspecialchars($item['name']) ?>">
+                                    <?= htmlspecialchars($item['name']) ?>
                                 </h6>
                                 <p class="card-text text-muted small mb-3"
                                     style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                                     <?= htmlspecialchars($item['description'] ?? '') ?>
                                 </p>
+
                                 <div class="price-tag mb-3">
-                                    <?= number_format($item['price'] ?? 0) ?>đ
+                                    <?= number_format($item['price_adult'] ?? 0, 0, ',', '.') ?>đ
                                 </div>
 
-                                <form method="post" action="dashboard.php" class="mt-auto">
+                                <form method="post" class="mt-auto">
                                     <input type="hidden" name="action" value="place_booking">
-                                    <input type="hidden" name="tour_id" value="<?= htmlspecialchars($item['id']) ?>">
+                                    <input type="hidden" name="tour_id" value="<?= $item['id'] ?>">
                                     <div class="mb-2">
                                         <label class="small text-muted">Ngày khởi hành:</label>
                                         <input type="date" name="booking_date" class="form-control form-control-sm" required
@@ -345,7 +320,7 @@ if ($conn) {
                                         <input type="number" name="quantity" class="form-control form-control-sm" min="1"
                                             value="1" required>
                                     </div>
-                                    <button type="submit" class="btn btn-primary btn-sm w-100">Đặt tour</button>
+                                    <button type="submit" class="btn btn-primary btn-sm w-100">Đặt tour ngay</button>
                                 </form>
                             </div>
                         </div>
@@ -357,7 +332,7 @@ if ($conn) {
 
     <footer class="bg-white py-4 mt-5 border-top">
         <div class="container text-center text-muted small">
-            &copy; 2026 VIE travele Project. Code by DUY THUAN DAT.
+            &copy; 2026 VIE Travel Project. Code by DUY THUAN DAT.
         </div>
     </footer>
 
@@ -374,7 +349,6 @@ if ($conn) {
             }, 4000);
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
